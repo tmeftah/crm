@@ -1,57 +1,69 @@
 <template>
   <q-page padding>
-    <div class="container">
-      <div class="table-section">
-        <q-btn
-          label="Add New Customer"
-          color="primary"
-          icon="add"
-          class="q-mb-md"
-          to="/new"
-        />
-
-        <q-table
-          title="Customer List"
-          :rows="customers"
-          :columns="columns"
-          row-key="id"
-          :pagination="pagination"
-        >
-          <template v-slot:body="props">
-            <q-tr :props="props">
-              <q-td key="id" :props="props">{{ props.row.id }}</q-td>
-              <q-td key="name" :props="props">{{ props.row.name }}</q-td>
-              <q-td key="email" :props="props">{{ props.row.email }}</q-td>
-              <q-td key="activity" :props="props">{{
-                props.row.activity
-              }}</q-td>
-              <q-td key="phones" :props="props">
-                <ul>
-                  <li v-for="(phone, index) in props.row.phones" :key="index">
-                    {{ phone.label }}: {{ phone.number }}
-                  </li>
-                </ul>
-              </q-td>
-              <q-td key="actions" :props="props">
-                <q-btn
-                  label="Edit"
-                  color="primary"
-                  size="sm"
-                  :to="`/customers/${props.row.id}`"
-                />
-                <q-btn
-                  label="Delete"
-                  color="negative"
-                  size="sm"
-                  @click="deleteCustomer(props.row.id)"
-                />
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
+    <div class="q-pa-md">
+      <q-btn
+        label="Add New Customer"
+        color="primary"
+        icon="add"
+        class="q-mb-md"
+        to="/new"
+      />
+      <div class="row q-col-gutter-md">
+        <div class="col-md-7 col-xs-12">
+          <q-table
+            title="Customer List"
+            :rows="customers"
+            :columns="columns"
+            row-key="id"
+            :pagination="pagination"
+          >
+            <template v-slot:body="props">
+              <q-tr :props="props">
+                <q-td key="id" :props="props">{{ props.row.id }}</q-td>
+                <q-td key="name" :props="props">{{ props.row.name }}</q-td>
+                <q-td key="email" :props="props">{{ props.row.email }}</q-td>
+                <q-td key="activity" :props="props">{{
+                  props.row.activity
+                }}</q-td>
+                <q-td key="phones" :props="props">
+                  <ul>
+                    <li v-for="(phone, index) in props.row.phones" :key="index">
+                      {{ phone.label }}: {{ phone.number }}
+                    </li>
+                  </ul>
+                </q-td>
+                <q-td key="actions" :props="props">
+                  <q-btn
+                    label="Edit"
+                    color="primary"
+                    size="sm"
+                    :to="`/customers/${props.row.id}`"
+                  />
+                  <q-btn
+                    label="Delete"
+                    color="negative"
+                    size="sm"
+                    @click="deleteCustomer(props.row.id)"
+                  />
+                </q-td>
+              </q-tr>
+            </template>
+          </q-table>
+        </div>
+        <div class="col-md-5 col-xs-12">
+          <q-card class="map-container q-pa-md">
+            <div class="text-h6">Our leads maps</div>
+            <q-card-section>
+              <div
+                class="map-section"
+                ref="map"
+                id="map"
+                style="height: 400px"
+              ></div
+            ></q-card-section>
+          </q-card>
+        </div>
       </div>
-
-      <div class="map-section" ref="map" id="map"></div>
     </div>
   </q-page>
 </template>
@@ -139,7 +151,7 @@ export default {
         ],
         view: new View({
           center: fromLonLat([9.0, 35.0]), // Center on Tunisia
-          zoom: 7.5, // Set an appropriate zoom level to see Tunisia
+          zoom: 6.5, // Set an appropriate zoom level to see Tunisia
         }),
       });
       displayMarkers();
@@ -200,7 +212,7 @@ export default {
 .map-section {
   flex: 1;
   height: 100%;
-  padding: 16px;
+
   overflow: hidden;
 }
 
