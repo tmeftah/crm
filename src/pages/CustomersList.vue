@@ -17,6 +17,15 @@
             row-key="id"
             :pagination="pagination"
           >
+            <template v-slot:top-right>
+              <q-btn
+                color="blue-grey-4"
+                icon-right="archive"
+                label="Export to csv"
+                no-caps
+                @click="exportTable"
+              />
+            </template>
             <template v-slot:body="props">
               <q-tr :props="props">
                 <q-td key="name" :props="props">{{ props.row.name }}</q-td>
@@ -33,13 +42,14 @@
                 </q-td>
                 <q-td key="actions" :props="props">
                   <q-btn
-                    label="Edit"
+                    icon="edit"
                     color="primary"
                     size="sm"
                     :to="`/customers/${props.row.id}`"
+                    class="q-mr-xs"
                   />
                   <q-btn
-                    label="Delete"
+                    icon="delete"
                     color="negative"
                     size="sm"
                     @click="deleteCustomer(props.row.id)"
@@ -68,6 +78,7 @@
 </template>
 
 <script>
+import { exportFile, useQuasar } from "quasar";
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useLeadStore } from "../stores/leadStore";
 import "ol/ol.css";
@@ -84,6 +95,7 @@ import VectorLayer from "ol/layer/Vector";
 
 export default {
   setup() {
+    const $q = useQuasar();
     const leadStore = useLeadStore();
 
     onMounted(() => {
@@ -184,12 +196,94 @@ export default {
       });
     };
 
+    const wrapCsvValue = (val, formatFn, row) => {
+      let formatted = formatFn !== void 0 ? formatFn(val, row) : val;
+
+      // Convert objects to formatted key-value strings
+      if (typeof formatted === "object" && formatted !== null) {
+        try {
+          if (Array.isArray(formatted)) {
+            // Assuming val is an array of objects, as in the provided example
+            formatted = formatted
+              .map((item) =>
+                Object.entries(item)
+                  .map(([key, value]) => `${key}: ${value}`)
+                  .join(" - ")
+              )
+              .join(" / ");
+          } else {
+            // If it's a single object
+            formatted = Object.entries(formatted)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(" - ");
+          }
+        } catch (error) {
+          console.error("Error processing object:", error);
+          formatted = ""; // Fallback to empty string or handle error as needed
+        }
+      }
+
+      formatted =
+        formatted === void 0 || formatted === null ? "" : String(formatted);
+
+      formatted = formatted.split('"').join('""');
+      /**
+       * Excel accepts \n and \r in strings, but some other CSV parsers do not
+       * Uncomment the next two lines to escape new lines
+       */
+      // .split('\n').join('\\n')
+      // .split('\r').join('\\r')
+
+      return `"${formatted}"`;
+    };
+    const exportTable = () => {
+      // Filter out columns with the name 'ACTION'
+      const exportableColumns = columns.filter((col) => col.name !== "actions");
+
+      // Naive encoding to CSV format
+      const content = [exportableColumns.map((col) => wrapCsvValue(col.label))]
+        .concat(
+          customers.value.map((row) =>
+            exportableColumns
+              .map((col) =>
+                wrapCsvValue(
+                  typeof col.field === "function"
+                    ? col.field(row)
+                    : row[col.field === undefined ? col.name : col.field],
+                  col.format,
+                  row
+                )
+              )
+              .join(",")
+          )
+        )
+        .join("\r\n");
+
+      const status = exportFile("table-export.csv", content, "text/csv");
+
+      if (status !== true) {
+        $q.notify({
+          message: "Browser denied file download...",
+          color: "negative",
+          icon: "warning",
+        });
+      } else {
+        $q.notify({
+          message: "Export successfully.",
+          color: "positive",
+          icon: "done",
+        });
+      }
+    };
+
     return {
       customers,
       columns,
       pagination,
       deleteCustomer,
       mapElement,
+      wrapCsvValue,
+      exportTable,
     };
   },
 };
