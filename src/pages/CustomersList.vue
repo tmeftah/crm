@@ -19,7 +19,6 @@
           >
             <template v-slot:body="props">
               <q-tr :props="props">
-                <q-td key="id" :props="props">{{ props.row.id }}</q-td>
                 <q-td key="name" :props="props">{{ props.row.name }}</q-td>
                 <q-td key="email" :props="props">{{ props.row.email }}</q-td>
                 <q-td key="activity" :props="props">{{
@@ -95,7 +94,6 @@ export default {
     const mapElement = ref(null);
 
     const columns = [
-      { name: "id", label: "ID", align: "left", field: "id", sortable: true },
       {
         name: "name",
         label: "Name",
