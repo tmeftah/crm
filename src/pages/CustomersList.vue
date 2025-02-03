@@ -20,10 +20,18 @@
             <template v-slot:top-right>
               <q-btn
                 color="blue-grey-4"
-                icon-right="archive"
-                label="Export to csv"
+                icon-right="description"
+                label="CSV"
                 no-caps
                 @click="exportTable"
+              />
+              <q-btn
+                color="green"
+                icon-right="data_object"
+                label="JSON"
+                no-caps
+                @click="exportJson"
+                class="q-ml-md"
               />
             </template>
             <template v-slot:body="props">
@@ -276,6 +284,26 @@ export default {
       }
     };
 
+    const exportJson = () => {
+      const dataStr = JSON.stringify(customers.value, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "customers-data.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      $q.notify({
+        message: "JSON export successful.",
+        color: "positive",
+        icon: "done",
+      });
+    };
+
     return {
       customers,
       columns,
@@ -284,6 +312,7 @@ export default {
       mapElement,
       wrapCsvValue,
       exportTable,
+      exportJson,
     };
   },
 };
